@@ -1,29 +1,34 @@
 from contextlib import asynccontextmanager
 from logging import getLogger
-from typing import AsyncGenerator
 
-from fastapi import FastAPI, APIRouter
+from dishka.integrations.fastapi import setup_dishka
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from src.ioc import container
+from src.api.errors.handlers import setup_exception_handlers
+from src.api.routers import api_router
 
 logger = getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[dict, None]:
+async def lifespan(app_instance: FastAPI):
     logger.info("Инициализация приложения...")
     yield
     logger.info("Завершение работы приложения...")
+    await app_instance.state.dishka_container.close()
+    logger.info("Завершено")
 
 
-def main() -> FastAPI:
-    app = FastAPI(
-        title="Стартовая сборка FastAPI",
+def create_app() -> FastAPI:
+    created_app = FastAPI(
+        title="Auth-service",
         version="1.0.0",
         lifespan=lifespan,
     )
 
-    # Настройка CORS
-    app.add_middleware(
+    created_app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
         allow_credentials=True,
@@ -31,24 +36,13 @@ def main() -> FastAPI:
         allow_headers=["*"],
     )
 
-    register_routers(app)
+    setup_exception_handlers(created_app)
 
-    return app
+    created_app.include_router(api_router)
 
+    setup_dishka(container=container, app=created_app)
 
-def register_routers(app: FastAPI) -> None:
-    root_router = APIRouter()
-
-    @root_router.get("/", tags=["root"])
-    def home_page():
-        return {
-            "message": "Добро пожаловать! Проект создан для сообщества 'Легкий путь в Python'.",
-            "community": "https://t.me/PythonPathMaster",
-            "author": "Яковенко Алексей",
-        }
-
-    app.include_router(root_router, tags=["root"])
+    return created_app
 
 
-# Создание экземпляра приложения
-apple = main()
+app = create_app()

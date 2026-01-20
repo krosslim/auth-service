@@ -1,18 +1,17 @@
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
-from dishka import Provider, provide, Scope
-from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, async_sessionmaker
-
+from dishka import Provider, Scope, provide
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from src.storage.postgres.database import (
-    get_session,
-    create_engine,
     build_session_factory,
+    create_engine,
+    get_session,
 )
 
 
 class DatabaseProvider(Provider):
     @provide(scope=Scope.APP)
-    async def provide_engine(self) -> AsyncGenerator[AsyncEngine, None]:
+    async def provide_engine(self) -> AsyncGenerator[AsyncEngine]:
         engine = create_engine()
         try:
             yield engine
@@ -28,6 +27,6 @@ class DatabaseProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def provide_db_session(
         self, session_factory: async_sessionmaker[AsyncSession]
-    ) -> AsyncGenerator[AsyncSession, None]:
+    ) -> AsyncGenerator[AsyncSession]:
         async with get_session(session_factory) as session:
             yield session

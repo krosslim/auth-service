@@ -1,12 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, BigInteger
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import BigInteger, DateTime, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import text
-
 from src.storage.postgres.models.base import Base
 
 

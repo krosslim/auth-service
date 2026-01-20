@@ -6,52 +6,57 @@ from urllib.parse import parse_qsl
 
 from src.domain.models.telegram import TelegramInitDataPayload
 from src.domain.providers.auth_provider import AuthProvider, UserInfo
+from src.domain.exceptions import AuthProviderException
 
 
 class TelegramAuthProvider(AuthProvider):
-    def __init__(self, bot_token: str, init_data_lifetime: int):
+    def __init__(self, bot_token: str, init_data_lifetime: int, exc_code: str = "TELEGRAM_AUTH"):
         self.bot_token = bot_token
         self.init_data_lifetime = init_data_lifetime
+        self.exc_code = exc_code
 
     async def authenticate(self, payload: object) -> UserInfo:
         if not isinstance(payload, TelegramInitDataPayload):
-            raise TypeError("Invalid payload")
+            raise AuthProviderException(code=self.exc_code, message="Invalid request payload")
 
-        pairs = self._parse_pairs(payload.init_data)
+        try:
+            pairs = self._parse_pairs(payload.init_data)
+        except ValueError:
+            raise AuthProviderException(code=self.exc_code, message="Invalid InitData format")
+
         data = dict(pairs)
-
         received_hash = data.get("hash")
         if not received_hash:
-            raise ValueError("hash is required")
+            raise AuthProviderException(code=self.exc_code, message="hash in InitData is required")
 
         if not self._validate(pairs, received_hash, self.bot_token):
-            raise ValueError("Invalid hash")
+            raise AuthProviderException(code=self.exc_code, message="Invalid hash")
 
         auth_date_str = data.get("auth_date")
         if not auth_date_str:
-            raise ValueError("auth_date is required")
+            raise AuthProviderException(code=self.exc_code, message="auth_date is required")
 
         try:
             auth_date = int(auth_date_str)
         except ValueError as e:
-            raise ValueError("auth_date must be int") from e
+            raise AuthProviderException(code=self.exc_code, message="auth_date must be int") from e
 
         now = int(time.time())
         if now - auth_date > int(self.init_data_lifetime):
-            raise ValueError("init_data expired")
+            raise AuthProviderException(code=self.exc_code, message="InitData expired")
 
         user_raw = data.get("user")
         if not user_raw:
-            raise ValueError("user is required")
+            raise AuthProviderException(code=self.exc_code, message="user is required")
 
         try:
             user = json.loads(user_raw)
         except json.JSONDecodeError as e:
-            raise ValueError("user must be valid JSON") from e
+            raise AuthProviderException(code=self.exc_code, message="user must be valid JSON") from e
 
         user_id = user.get("id")
         if user_id is None:
-            raise ValueError("user_id is required")
+            raise AuthProviderException(code=self.exc_code, message="user_id is required")
 
         return UserInfo(provider="telegram", sub=str(user_id))
 

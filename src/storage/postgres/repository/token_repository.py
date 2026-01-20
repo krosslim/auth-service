@@ -4,7 +4,6 @@ from uuid import UUID
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from src.domain.models.token import RefreshTokenDto
 from src.storage.postgres.models.token import Token
 

@@ -12,3 +12,10 @@ class RefreshTokenDto:
     expires_at: datetime
     revoked_at: datetime = None
     rotated_to: UUID = None
+
+
+@dataclass(slots=True, frozen=True)
+class AuthResponseDto:
+    access_token: str
+    refresh_token: str
+    token_type: str = "Bearer"

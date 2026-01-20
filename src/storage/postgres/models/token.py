@@ -1,22 +1,21 @@
-import uuid
+from uuid import UUID
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, DateTime
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, BYTEA
+from sqlalchemy import DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import BYTEA, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import text
-
 from src.storage.postgres.models.base import Base
 
 
 class Token(Base):
     __tablename__ = "tokens"
 
-    id: Mapped[uuid.UUID] = mapped_column(
+    id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
     )
 
-    user_id: Mapped[uuid.UUID] = mapped_column(
+    user_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
     )
 
@@ -34,7 +33,7 @@ class Token(Base):
         DateTime(timezone=True), nullable=True
     )
 
-    rotated_to: Mapped[uuid.UUID | None] = mapped_column(
+    rotated_to: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True), ForeignKey("tokens.id"), nullable=True
     )
 
@@ -47,6 +46,7 @@ class Token(Base):
 
     rotated_token = relationship(
         "Token",
-        remote_side=[id],
+        foreign_keys="Token.rotated_to",
+        remote_side="Token.id",
         uselist=False,
     )
