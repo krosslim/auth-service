@@ -4,10 +4,9 @@ from logging import getLogger
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from src.ioc import container
-from src.api.errors.handlers import setup_exception_handlers
+from src.api.error.handlers import setup_exception_handlers
 from src.api.routers import api_router
+from src.ioc import container
 
 logger = getLogger(__name__)
 

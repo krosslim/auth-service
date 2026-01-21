@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AuthResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     access_token: str = Field(
         ...,
         description="Access token",

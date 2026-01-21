@@ -5,13 +5,11 @@ from uuid import UUID
 
 @dataclass(slots=True, frozen=True)
 class RefreshTokenDto:
-    id: UUID
-    user_id: UUID
     token_hash: bytes
     created_at: datetime
+    user_id: UUID
     expires_at: datetime
     revoked_at: datetime = None
-    rotated_to: UUID = None
 
 
 @dataclass(slots=True, frozen=True)

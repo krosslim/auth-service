@@ -2,5 +2,5 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
-class TelegramInitDataPayload:
+class TelegramLoginCredentials:
     init_data: str

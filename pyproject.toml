@@ -52,8 +52,10 @@ exclude = [
     "buck-out",
     "build",
     "dist",
-    "tests"
+    "tests",
+    "migrations"
 ]
+force-exclude = true
 
 
 [tool.ruff.lint]
