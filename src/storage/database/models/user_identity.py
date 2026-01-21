@@ -5,7 +5,7 @@ from sqlalchemy import DateTime, ForeignKey, Index, SmallInteger, Text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import text
-from src.storage.postgres.models.base import Base
+from src.storage.database.models.base import Base
 
 
 class UserIdentity(Base):

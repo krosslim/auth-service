@@ -2,7 +2,7 @@ from collections.abc import AsyncGenerator
 
 from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
-from src.storage.postgres.database import (
+from src.storage.database.database import (
     build_session_factory,
     create_engine,
     get_session,

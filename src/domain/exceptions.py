@@ -4,6 +4,10 @@ class DomainException(Exception):
         self.message = message
         super().__init__(self.message)
 
+
 class AuthProviderException(DomainException):
     """Ошибка аутентификации через внешнего провайдера"""
 
+
+class DuplicateIdentityException(DomainException):
+    """Обнаружен дубликат Identity Provider у пользователя"""

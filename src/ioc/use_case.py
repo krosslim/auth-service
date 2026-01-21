@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.app.config import settings as s
 from src.domain.providers.telegram_auth_provider import TelegramAuthProvider
 from src.domain.use_cases.login_use_case import LoginUseCase
-from src.storage.postgres.repository.user_repository import UserRepository
+from src.storage.database.repository.user_repository import UserRepository
 
 
 class TelegramComponentProvider(Provider):

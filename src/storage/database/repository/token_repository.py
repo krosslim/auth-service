@@ -5,7 +5,7 @@ from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.models.token import RefreshTokenDto
-from src.storage.postgres.models.token import RefreshToken
+from src.storage.database.models.token import RefreshToken
 
 
 class TokenRepository:

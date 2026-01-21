@@ -4,7 +4,7 @@ from logging import getLogger
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.api.error.handlers import setup_exception_handlers
+from src.api.error_handlers import setup_exception_handlers
 from src.api.routers import api_router
 from src.ioc import container
 
@@ -21,11 +21,7 @@ async def lifespan(app_instance: FastAPI):
 
 
 def create_app() -> FastAPI:
-    created_app = FastAPI(
-        title="Auth-service",
-        version="1.0.0",
-        lifespan=lifespan,
-    )
+    created_app = FastAPI(title="Auth-service", version="1.0.0", lifespan=lifespan)
 
     created_app.add_middleware(
         CORSMiddleware,

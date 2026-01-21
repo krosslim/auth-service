@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.app.identity_providers import AppProvider
 from src.ioc import container
-from src.storage.postgres.repository.user_repository import UserRepository
+from src.storage.database.repository.user_repository import UserRepository
 
 
 @pytest.mark.integration

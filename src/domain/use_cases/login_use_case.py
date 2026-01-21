@@ -1,11 +1,13 @@
 from uuid import UUID
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.app.identity_providers import AppProvider
+from src.domain.exceptions import DuplicateIdentityException
 from src.domain.models.token import AuthResponseDto
 from src.domain.models.user import UserDto
 from src.domain.providers.auth_provider import AuthProvider, UserInfo
-from src.storage.postgres.repository.user_repository import UserRepository
+from src.storage.database.repository.user_repository import UserRepository
 
 
 class LoginUseCase:
@@ -17,20 +19,6 @@ class LoginUseCase:
         self.user_repo = user_repo
 
     async def execute(self, payload: dict) -> AuthResponseDto:
-        """
-        1. Аутентифицировать
-        2. Проверить существование пользователя в базе
-        2.1. Если пользователя существует ->
-            - Создать токены
-            - Перейти на шаг 3
-        2.2. Иначе -> Открыть транзакцию
-            - Создать пользователя
-            - Создать Identity в user_identities
-                - Если запрос вернул None -> Вернуть (Какой код ошибки?)
-            - Создать токены
-            - Закоммитить транзакцию.
-        3. Вернуть AuthResponseDto
-        """
         async with self.session.begin():
             credentials = await self._authenticate(payload)
 
@@ -40,17 +28,19 @@ class LoginUseCase:
 
             if not user:
                 user_id = await self._create_user()
-                user = await self._attach_user_identity(
-                    provider=AppProvider(credentials.provider),
-                    sub=credentials.sub,
-                    user_id=user_id,
-                )
-                if not user:
-                    user = await self._get_user_by_identity(
-                        provider=AppProvider(credentials.provider), sub=credentials.sub
+                try:
+                    user = await self._attach_user_identity(
+                        provider=AppProvider(credentials.provider),
+                        sub=credentials.sub,
+                        user_id=user_id,
+                    )
+                except IntegrityError:
+                    raise DuplicateIdentityException(
+                        code="DUPLICATE_IDENTITY_PROVIDER",
+                        message="This identity provider is already linked to the user",
                     )
 
-        #     TO DO: Создать refresh/access токены
+        # TO DO: Создать refresh/access токены
 
         return AuthResponseDto(access_token="test", refresh_token="test")
 

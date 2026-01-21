@@ -5,8 +5,8 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.app.identity_providers import AppProvider
 from src.domain.models.user import UserDto
-from src.storage.postgres.models import UserIdentity
-from src.storage.postgres.models.user import User
+from src.storage.database.models import UserIdentity
+from src.storage.database.models.user import User
 
 
 class UserRepository:
@@ -29,18 +29,21 @@ class UserRepository:
 
     async def attach_identity(
         self, provider: AppProvider, sub: str, user_id: UUID
-    ) -> UserDto | None:
+    ) -> UserDto:
         stmt = (
             insert(UserIdentity)
             .values(provider=provider, sub=sub, user_id=user_id)
-            .on_conflict_do_nothing()
+            .on_conflict_do_nothing(
+                index_elements=[UserIdentity.provider, UserIdentity.sub]
+            )
             .returning(UserIdentity)
         )
         result = await self.session.execute(stmt)
         user: UserIdentity = result.scalar_one_or_none()
-        if user is None:
-            return None
-        return self._to_dto(user)
+        if user is not None:
+            return self._to_dto(user)
+        # обработка race condition
+        return await self.find_by_identity(provider, sub)
 
     async def find_by_identity(self, provider: AppProvider, sub: str) -> UserDto | None:
         stmt = select(UserIdentity).where(
