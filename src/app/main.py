@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.api.error_handlers import setup_exception_handlers
 from src.api.routers import api_router
 from src.ioc import container
+from src.utils.docs_gen import openapi_postprocess
 
 logger = getLogger(__name__)
 
@@ -36,6 +37,16 @@ def create_app() -> FastAPI:
     created_app.include_router(api_router)
 
     setup_dishka(container=container, app=created_app)
+
+    def custom_openapi():
+        if created_app.openapi_schema:
+            return created_app.openapi_schema
+        schema = FastAPI.openapi(created_app)
+        schema = openapi_postprocess(schema)
+        created_app.openapi_schema = schema
+        return schema
+
+    created_app.openapi = custom_openapi
 
     return created_app
 

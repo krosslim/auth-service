@@ -8,7 +8,6 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 
 def openapi_postprocess(schema: dict[str, Any]) -> dict[str, Any]:
-
     paths = schema.get("paths", {})
     for path_item in paths.values():
         for method_item in path_item.values():
@@ -19,14 +18,24 @@ def openapi_postprocess(schema: dict[str, Any]) -> dict[str, Any]:
             parameters = method_item.get("parameters")
             if parameters and isinstance(parameters, list):
                 method_item["parameters"] = sorted(
-                    parameters,
-                    key=lambda p: (p.get("in") != "header")
+                    parameters, key=lambda p: (p.get("in") != "header")
                 )
+    components = schema.get("components", {})
+    schemas = components.get("schemas", {})
+
+    unwanted_schemas = {"HTTPValidationError", "ValidationError"}
+    for name in unwanted_schemas:
+        schemas.pop(name, None)
+
+    if not schemas:
+        components.pop("schemas", None)
+    if not components:
+        schema.pop("components", None)
+
     return schema
 
 
 def openapi_docs(scheme: dict[str, Any]) -> None:
-
     output_dir = PROJECT_ROOT / "docs"
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -44,7 +53,7 @@ def openapi_docs(scheme: dict[str, Any]) -> None:
                 allow_unicode=True,
                 default_flow_style=False,
                 sort_keys=False,
-                indent=2
+                indent=2,
             )
 
     except OSError as e:
@@ -55,6 +64,7 @@ def openapi_docs(scheme: dict[str, Any]) -> None:
 
 if __name__ == "__main__":
     from src.app.main import app
+
     spec = app.openapi()
     processed_spec = openapi_postprocess(spec)
     openapi_docs(processed_spec)
