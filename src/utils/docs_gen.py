@@ -1,13 +1,13 @@
 import json
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 import yaml
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 
-def openapi_postprocess(schema: Dict[str, Any]) -> Dict[str, Any]:
+def openapi_postprocess(schema: dict[str, Any]) -> dict[str, Any]:
 
     paths = schema.get("paths", {})
     for path_item in paths.values():
@@ -25,7 +25,7 @@ def openapi_postprocess(schema: Dict[str, Any]) -> Dict[str, Any]:
     return schema
 
 
-def openapi_docs(scheme: Dict[str, Any]) -> None:
+def openapi_docs(scheme: dict[str, Any]) -> None:
 
     output_dir = PROJECT_ROOT / "docs"
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -34,10 +34,10 @@ def openapi_docs(scheme: Dict[str, Any]) -> None:
     yaml_path = output_dir / "auth-service-openapi.yml"
 
     try:
-        with open(json_path, "w", encoding="utf-8") as f:
+        with Path.open(json_path, "w", encoding="utf-8") as f:
             json.dump(scheme, f, indent=2, ensure_ascii=False)
 
-        with open(yaml_path, "w", encoding="utf-8") as f:
+        with Path.open(yaml_path, "w", encoding="utf-8") as f:
             yaml.dump(
                 scheme,
                 f,
