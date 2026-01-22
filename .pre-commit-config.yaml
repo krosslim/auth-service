@@ -9,3 +9,11 @@ repos:
 
     # Run the formatter.
     - id: ruff-format
+- repo: local
+  hooks:
+    - id: generate-docs
+      name: Generate docs
+      entry: uv run python -m src.utils.docs_gen
+      language: system
+      pass_filenames: false
+      files: ^src/
