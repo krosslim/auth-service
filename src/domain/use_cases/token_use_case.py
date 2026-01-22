@@ -35,7 +35,7 @@ class TokenUseCase:
 
         access_token = self._create_access(user_id, idp, idp_sub)
         refresh_token, refresh_hash = self._create_refresh()
-        await self.save_refresh(
+        await self._save_refresh(
             user_id=user_id,
             token_hash=refresh_hash,
             expires_at=datetime.now(tz=timezone.utc) + timedelta(seconds=s.refresh_token.TTL_SECONDS)
@@ -90,7 +90,7 @@ class TokenUseCase:
 
         return refresh_token, refresh_hash
 
-    async def save_refresh(
+    async def _save_refresh(
             self,
             user_id: UUID,
             token_hash: bytes,
@@ -112,7 +112,12 @@ class TokenUseCase:
 
     # TO-DO
     # - refresh
+    """
+    1. Рассчитать хэш - при ошибке 401
+    2. Выполнить заполнить запрос в бд:
+        2.1. Если не найдена запись - 401
+        2.2. Если expire прошел - 401
+    3. Создать пару токенов
+        ...
+    """
     # - revoke_refresh
-    # - verify_access
-    # - _create_access
-    # - _create_refresh

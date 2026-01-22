@@ -16,3 +16,11 @@ LoginRequest = Annotated[
     TelegramLoginRequest,
     Field(discriminator="provider"),
 ]
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str = Field(
+        ...,
+        description="Refresh token",
+        examples=["o/jR5QlyuGRl6bIHigHU8sawqJ4yHH1F+Q4SuDpcbhE="],
+    )
