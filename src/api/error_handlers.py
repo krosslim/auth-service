@@ -8,6 +8,7 @@ from starlette import status
 EXCEPTION_STATUS_MAP: dict[type[e.DomainException], int] = {
     e.AuthProviderException: status.HTTP_400_BAD_REQUEST,
     e.DuplicateIdentityException: status.HTTP_409_CONFLICT,
+    e.RefreshHashException: status.HTTP_401_UNAUTHORIZED,
 }
 
 

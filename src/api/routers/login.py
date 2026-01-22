@@ -36,6 +36,4 @@ async def login(
     login_data = request.model_dump(exclude={"provider"})
     result = await uc.execute(login_data)
 
-    print(result)
-
     return AuthResponse.model_validate(result)

@@ -19,7 +19,6 @@ def _read_file(path: str) -> bytes:
 
 
 def _decode_hmac_secret(value: str) -> bytes:
-
     v = value.strip()
 
     try:
@@ -75,7 +74,7 @@ class AccessTokenConfig(BaseSettings):
         case_sensitive=False,
         env_prefix="ACCESS_TOKEN_",
         env_file=PROJECT_ROOT / ".env",
-        extra="ignore"
+        extra="ignore",
     )
 
     PRIVATE_KEY_PATH: str
@@ -96,7 +95,7 @@ class RefreshTokenConfig(BaseSettings):
         case_sensitive=False,
         env_prefix="REFRESH_TOKEN_",
         env_file=PROJECT_ROOT / ".env",
-        extra="ignore"
+        extra="ignore",
     )
 
     HMAC_SECRET: str = "SECRET_KEY"
@@ -121,4 +120,3 @@ class AppSettings(BaseSettings):
 
 
 settings = AppSettings()
-

@@ -1,5 +1,7 @@
 from typing import Annotated
 
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from dishka import FromComponent, Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.app.config import settings as s
@@ -8,9 +10,6 @@ from src.domain.use_cases.login_use_case import LoginUseCase
 from src.domain.use_cases.token_use_case import TokenUseCase
 from src.storage.database.repository.token_repository import TokenRepository
 from src.storage.database.repository.user_repository import UserRepository
-
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
 
 
 class TelegramComponentProvider(Provider):
@@ -35,7 +34,6 @@ class TelegramComponentProvider(Provider):
 
 
 class TokenUseCaseProvider(Provider):
-
     @provide(scope=Scope.APP)
     def provide_access_private_key(self) -> rsa.RSAPrivateKey:
         key = serialization.load_pem_private_key(
@@ -51,10 +49,6 @@ class TokenUseCaseProvider(Provider):
         self,
         session: AsyncSession,
         token_repo: TokenRepository,
-        access_private_key: rsa.RSAPrivateKey
+        access_private_key: rsa.RSAPrivateKey,
     ) -> TokenUseCase:
-        return TokenUseCase(
-            session,
-            token_repo,
-            access_private_key
-        )
+        return TokenUseCase(session, token_repo, access_private_key)

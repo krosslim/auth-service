@@ -55,7 +55,11 @@ class TokenRepository:
     ) -> RefreshTokenDto | None:
         stmt = (
             update(RefreshToken)
-            .where(RefreshToken.token_hash == token_hash)
+            .where(
+                RefreshToken.token_hash == token_hash,
+                RefreshToken.revoked_at.is_(None),
+                RefreshToken.expires_at > revoked_at,
+            )
             .values(revoked_at=revoked_at)
             .returning(RefreshToken)
         )

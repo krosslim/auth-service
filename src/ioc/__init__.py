@@ -8,5 +8,5 @@ container = make_async_container(
     DatabaseProvider(),
     RepositoryProvider(),
     TelegramComponentProvider(),
-    TokenUseCaseProvider()
+    TokenUseCaseProvider(),
 )

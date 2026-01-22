@@ -13,7 +13,11 @@ from src.storage.database.repository.user_repository import UserRepository
 
 class LoginUseCase:
     def __init__(
-        self, provider: AuthProvider, session: AsyncSession, user_repo: UserRepository, token: TokenUseCase
+        self,
+        provider: AuthProvider,
+        session: AsyncSession,
+        user_repo: UserRepository,
+        token: TokenUseCase,
     ):
         self.provider = provider
         self.session = session
@@ -42,7 +46,7 @@ class LoginUseCase:
                         message="This identity provider is already linked to the user",
                     )
 
-            token_pair = await self.token.issue(user.id, AppProvider(credentials.provider), credentials.sub)
+            token_pair = await self.token.issue(user.id)
 
         return token_pair
 
