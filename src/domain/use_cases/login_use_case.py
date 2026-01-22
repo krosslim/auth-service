@@ -7,16 +7,18 @@ from src.domain.exceptions import DuplicateIdentityException
 from src.domain.models.token import AuthResponseDto
 from src.domain.models.user import UserDto
 from src.domain.providers.auth_provider import AuthProvider, UserInfo
+from src.domain.use_cases.token_use_case import TokenUseCase
 from src.storage.database.repository.user_repository import UserRepository
 
 
 class LoginUseCase:
     def __init__(
-        self, provider: AuthProvider, session: AsyncSession, user_repo: UserRepository
+        self, provider: AuthProvider, session: AsyncSession, user_repo: UserRepository, token: TokenUseCase
     ):
         self.provider = provider
         self.session = session
         self.user_repo = user_repo
+        self.token = token
 
     async def execute(self, payload: dict) -> AuthResponseDto:
         async with self.session.begin():
@@ -40,9 +42,9 @@ class LoginUseCase:
                         message="This identity provider is already linked to the user",
                     )
 
-        # TO DO: Создать refresh/access токены
+            token_pair = await self.token.issue(user.id, AppProvider(credentials.provider), credentials.sub)
 
-        return AuthResponseDto(access_token="test", refresh_token="test")
+        return token_pair
 
     async def _authenticate(self, payload: dict) -> UserInfo:
         return await self.provider.authenticate(payload)

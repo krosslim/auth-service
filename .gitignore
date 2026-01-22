@@ -298,4 +298,10 @@ pyrightconfig.json
 pyvenv.cfg
 pip-selfcheck.json
 
+# pem
+private.pem
+public.pem
+*.pem
+
 # End of https://www.toptal.com/developers/gitignore/api/pycharm,python,venv
+/private.pem
