@@ -1,0 +1,48 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ---------- Virtual env (локальный!) ----------
+.venv/
+venv/
+env/
+
+# ---------- Tests / dev ----------
+tests/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+pytest.ini
+
+# ---------- Docs ----------
+docs/
+README.md
+
+# ---------- Git ----------
+.git/
+.gitignore
+
+# ---------- IDE ----------
+.idea/
+.vscode/
+
+# ---------- OS ----------
+.DS_Store
+Thumbs.db
+
+# ---------- Env / secrets ----------
+.env
+.env.*
+private.pem
+public.pem
+
+# ---------- Tooling ----------
+.pre-commit-config.yaml
+.python-version
+
+# ---------- Docker ----------
+docker-compose.yml
+Dockerfile*

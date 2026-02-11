@@ -1,4 +1,17 @@
 services:
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auth_service_app
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [auth_svc_network]
+
   postgres:
     image: postgres:18.1-alpine
     container_name: auth_svc_postgres
