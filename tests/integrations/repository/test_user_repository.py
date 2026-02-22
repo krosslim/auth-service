@@ -5,6 +5,7 @@ from dishka import Scope
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.app.identity_providers import AppProvider
+from src.domain.exceptions import DuplicateIdentity, DuplicateIdentityProviderForUser
 from src.ioc import container
 from src.storage.database.repository.user_repository import UserRepository
 
@@ -25,44 +26,49 @@ async def test_user_repository_create_and_get_roundtrip():
             user_id = await repo.create()
             assert user_id is not None
 
-            # 2. Привязываем Identity
-
-            attach = await repo.attach_identity(provider=AppProvider.TELEGRAM, sub=str(tg_id), user_id=user_id)
-            assert attach is not None
-            assert attach.provider == AppProvider.TELEGRAM
-            assert attach.sub == str(tg_id)
-            assert attach.id is not None
-
-            # 2.1. Пробуем привязать дубль Identity (provider, sub) - Проверка PK. Ожидаем получить None
-            second_attach = await repo.attach_identity(
+            # 2. Привязываем identity
+            attach = await repo.attach_identity(
                 provider=AppProvider.TELEGRAM,
                 sub=str(tg_id),
                 user_id=user_id,
             )
-            assert second_attach is None
+            assert attach is not None
+            assert attach.id == user_id
+            assert attach.provider == AppProvider.TELEGRAM
+            assert attach.sub == str(tg_id)
+            assert attach.idp_id is not None
 
-
-            # 2.2. Пробуем привязать имеющийся identity к другому пользователю
+            # 2.1. Дубль identity (provider, sub) должен дать DuplicateIdentity
             second_user_id = await repo.create()
             assert second_user_id is not None
-            attach_second_user = await repo.attach_identity(
+            with pytest.raises(DuplicateIdentity):
+                async with session.begin_nested():
+                    await repo.attach_identity(
+                        provider=AppProvider.TELEGRAM,
+                        sub=str(tg_id),
+                        user_id=second_user_id,
+                    )
+
+            # 2.2. Повторный provider для того же user должен дать DuplicateIdentityProviderForUser
+            with pytest.raises(DuplicateIdentityProviderForUser):
+                async with session.begin_nested():
+                    await repo.attach_identity(
+                        provider=AppProvider.TELEGRAM,
+                        sub=str(tg_id + 1),
+                        user_id=user_id,
+                    )
+
+            # 3. Проверяем поиск пользователя по identity
+            find = await repo.find_by_identity(
                 provider=AppProvider.TELEGRAM,
                 sub=str(tg_id),
-                user_id=second_user_id,
             )
-            assert attach_second_user is None
-
-
-            # 3. Проверяем метод для получения пользователя (пользователь 1 должен быть найден)
-            find = await repo.find_by_identity(provider=AppProvider.TELEGRAM, sub=str(tg_id))
             assert find is not None
+            assert find.id == user_id
             assert find.provider == AppProvider.TELEGRAM
             assert find.sub == str(tg_id)
-            assert find.id == user_id
+            assert find.idp_id == attach.idp_id
 
-            # Пользователь 2 должен отсутствовать в БД
-            find_b = await repo.find_by_identity(provider=AppProvider.TELEGRAM, sub=str(tg_id))
-            assert find_b.id != second_user_id
 
         finally:
             await tx.rollback()

@@ -8,6 +8,7 @@ class RefreshTokenDto:
     token_hash: bytes
     created_at: datetime
     user_id: UUID
+    idp_id: UUID
     expires_at: datetime
     revoked_at: datetime = None
 

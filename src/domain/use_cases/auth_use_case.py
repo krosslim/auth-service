@@ -1,14 +1,12 @@
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.app.identity_providers import AppProvider
-from src.domain.exceptions import DuplicateIdentityException
 from src.domain.models.token import AuthResponseDto
 from src.domain.providers.auth_provider import AuthProvider
 from src.domain.use_cases.token_use_case import TokenUseCase
 from src.storage.database.repository.user_repository import UserRepository
 
 
-class LoginUseCase:
+class AuthUseCase:
     def __init__(
         self,
         provider: AuthProvider,
@@ -31,18 +29,12 @@ class LoginUseCase:
 
             if not user:
                 user_id = await self.user_repo.create()
-                try:
-                    user = await self.user_repo.attach_identity(
-                        provider=AppProvider(credentials.provider),
-                        sub=credentials.sub,
-                        user_id=user_id,
-                    )
-                except IntegrityError:
-                    raise DuplicateIdentityException(
-                        code="DUPLICATE_IDENTITY_PROVIDER",
-                        message="This identity provider is already linked to the user",
-                    )
+                user = await self.user_repo.attach_identity(
+                    provider=AppProvider(credentials.provider),
+                    sub=credentials.sub,
+                    user_id=user_id,
+                )
 
-            token_pair = await self.token.issue(user.id)
+            token_pair = await self.token.issue(user.id, user.idp_id)
 
         return token_pair

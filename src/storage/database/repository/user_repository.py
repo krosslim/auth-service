@@ -2,8 +2,10 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.app.identity_providers import AppProvider
+from src.domain.exceptions import DuplicateIdentity, DuplicateIdentityProviderForUser
 from src.domain.models.user import UserDto
 from src.storage.database.models import UserIdentity
 from src.storage.database.models.user import User
@@ -16,7 +18,10 @@ class UserRepository:
     @staticmethod
     def _to_dto(user: UserIdentity) -> UserDto:
         return UserDto(
-            id=user.user_id, provider=AppProvider(user.provider), sub=user.sub
+            id=user.user_id,
+            idp_id=user.id,
+            provider=AppProvider(user.provider),
+            sub=user.sub,
         )
 
     async def create(self) -> UUID:
@@ -38,12 +43,14 @@ class UserRepository:
             )
             .returning(UserIdentity)
         )
-        result = await self.session.execute(stmt)
-        user: UserIdentity = result.scalar_one_or_none()
-        if user is not None:
-            return self._to_dto(user)
-        # обработка race condition
-        return await self.find_by_identity(provider, sub)
+        try:
+            result = await self.session.execute(stmt)
+            identity: UserIdentity = result.scalar_one_or_none()
+        except IntegrityError as err:
+            raise DuplicateIdentityProviderForUser() from err
+        if identity is None:
+            raise DuplicateIdentity()
+        return self._to_dto(identity)
 
     async def find_by_identity(self, provider: AppProvider, sub: str) -> UserDto | None:
         stmt = select(UserIdentity).where(

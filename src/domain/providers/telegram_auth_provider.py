@@ -5,7 +5,7 @@ import time
 from urllib.parse import parse_qsl
 
 from src.domain.exceptions import AuthProviderException
-from src.domain.models.login import TelegramLoginCredentials
+from src.domain.models.auth import TelegramAuthCredentials
 from src.domain.providers.auth_provider import AuthProvider, UserInfo
 
 
@@ -19,7 +19,7 @@ class TelegramAuthProvider(AuthProvider):
 
     async def authenticate(self, payload: dict) -> UserInfo:
         try:
-            payload = TelegramLoginCredentials(**payload)
+            payload = TelegramAuthCredentials(**payload)
         except TypeError as err:
             raise AuthProviderException(
                 code=self.exc_code, message="Invalid request payload"

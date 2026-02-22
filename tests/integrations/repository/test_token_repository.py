@@ -43,11 +43,13 @@ async def test_token_repository_create_and_get_roundtrip():
 
             created = await token_repo.create(
                 user_id=user_id,
+                idp_id=user.idp_id,
                 token_hash=token_hash,
                 expires_at=expires_at,
             )
 
             assert created.user_id == user_id
+            assert created.idp_id == user.idp_id
             assert created.token_hash == token_hash
             assert created.created_at is not None
             assert created.expires_at is not None

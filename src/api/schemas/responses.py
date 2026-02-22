@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
+from starlette import status
 
 
 class AuthResponse(BaseModel):
@@ -22,3 +23,19 @@ class AuthResponse(BaseModel):
 class ErrorResponse(BaseModel):
     code: str = Field(..., description="Tech error code")
     message: str = Field(..., description="Human-readable error message")
+
+
+COMMON_RESPONSES = {
+    status.HTTP_400_BAD_REQUEST: {
+        "description": "Invalid request",
+        "model": ErrorResponse,
+    },
+    status.HTTP_401_UNAUTHORIZED: {
+        "description": "Unauthorized",
+        "model": ErrorResponse,
+    },
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {
+        "description": "Internal server error",
+        "model": ErrorResponse,
+    },
+}

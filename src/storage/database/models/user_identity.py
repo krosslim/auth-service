@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Index, SmallInteger, Text
+from sqlalchemy import DateTime, ForeignKey, Index, SmallInteger, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import text
@@ -11,18 +11,21 @@ from src.storage.database.models.base import Base
 class UserIdentity(Base):
     __tablename__ = "user_identities"
     __table_args__ = (
-        Index(
-            "user_identities_user_provider_ux",
-            "user_id",
-            "provider",
-            unique=True,
+        UniqueConstraint(
+            "user_id", "provider", name="user_identities_user_provider_ux"
         ),
+        UniqueConstraint("provider", "sub", name="user_identities_provider_sub_ux"),
+        Index("user_identities_user_id_ix", "user_id"),
     )
 
-    provider: Mapped[int] = mapped_column(
-        SmallInteger, primary_key=True, nullable=False
+    id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("uuidv7()"),
     )
-    sub: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
+
+    provider: Mapped[int] = mapped_column(SmallInteger, nullable=False)
+    sub: Mapped[str] = mapped_column(Text, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -38,3 +41,6 @@ class UserIdentity(Base):
 
     # --- relationships ---
     user = relationship(argument="User", back_populates="identities")
+    identity_tokens = relationship(
+        argument="RefreshToken", back_populates="user_identity"
+    )

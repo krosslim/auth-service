@@ -23,6 +23,12 @@ class RefreshToken(Base):
         nullable=False,
     )
 
+    idp_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("user_identities.id", name="tokens_user_idp_id_fk"),
+        nullable=False,
+    )
+
     expires_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
@@ -33,3 +39,6 @@ class RefreshToken(Base):
 
     # --- relationships ---
     user = relationship(argument="User", back_populates="tokens")
+    user_identity = relationship(
+        argument="UserIdentity", back_populates="identity_tokens"
+    )

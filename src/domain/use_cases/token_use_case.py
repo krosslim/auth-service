@@ -20,17 +20,17 @@ class TokenUseCase:
         self.token_repo = token_repo
         self.private_key = private_key
 
-    async def issue(self, user_id: UUID) -> AuthResponseDto:
+    async def issue(self, user_id: UUID, idp_id: UUID) -> AuthResponseDto:
         access_token = self._create_access(user_id)
         refresh_token = self._create_refresh()
         refresh_hash = self._create_refresh_hash(refresh_token)
-        await self._save_refresh(
+        await self.token_repo.create(
             user_id=user_id,
+            idp_id=idp_id,
             token_hash=refresh_hash,
             expires_at=datetime.now(tz=UTC)
             + timedelta(seconds=s.refresh_token.TTL_SECONDS),
         )
-
         return AuthResponseDto(access_token=access_token, refresh_token=refresh_token)
 
     async def refresh(self, refresh_token: str) -> AuthResponseDto:
@@ -39,7 +39,10 @@ class TokenUseCase:
 
             hash_record = await self._mark_token_as_revoked(refresh_hash)
 
-            return await self.issue(hash_record.user_id)
+            return await self.issue(
+                user_id=hash_record.user_id,
+                idp_id=hash_record.idp_id,
+            )
 
     async def revoke(self, refresh_token: str) -> None:
         async with self.session.begin():
@@ -80,11 +83,6 @@ class TokenUseCase:
         refresh_token = self._b64url_encode_bytes(raw)
 
         return refresh_token
-
-    async def _save_refresh(
-        self, user_id: UUID, token_hash: bytes, expires_at: datetime
-    ) -> RefreshTokenDto:
-        return await self.token_repo.create(user_id, token_hash, expires_at)
 
     async def _mark_token_as_revoked(self, refresh_hash: bytes) -> RefreshTokenDto:
         now = datetime.now(tz=UTC)

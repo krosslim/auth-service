@@ -6,7 +6,7 @@ from dishka import FromComponent, Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.app.config import settings as s
 from src.domain.providers.telegram_auth_provider import TelegramAuthProvider
-from src.domain.use_cases.login_use_case import LoginUseCase
+from src.domain.use_cases.auth_use_case import AuthUseCase
 from src.domain.use_cases.token_use_case import TokenUseCase
 from src.storage.database.repository.token_repository import TokenRepository
 from src.storage.database.repository.user_repository import UserRepository
@@ -29,8 +29,8 @@ class TelegramComponentProvider(Provider):
         session: Annotated[AsyncSession, FromComponent("")],
         user_repo: Annotated[UserRepository, FromComponent("")],
         token: Annotated[TokenUseCase, FromComponent("")],
-    ) -> LoginUseCase:
-        return LoginUseCase(provider, session, user_repo, token)
+    ) -> AuthUseCase:
+        return AuthUseCase(provider, session, user_repo, token)
 
 
 class TokenUseCaseProvider(Provider):

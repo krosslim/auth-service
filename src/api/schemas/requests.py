@@ -3,7 +3,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 
 
-class TelegramLoginRequest(BaseModel):
+class TelegramAuthRequest(BaseModel):
     provider: Literal["telegram"]
     init_data: str = Field(
         ...,
@@ -12,8 +12,8 @@ class TelegramLoginRequest(BaseModel):
     )
 
 
-LoginRequest = Annotated[
-    TelegramLoginRequest,
+AuthRequest = Annotated[
+    TelegramAuthRequest,
     Field(discriminator="provider"),
 ]
 

@@ -18,6 +18,7 @@ class TokenRepository:
             token_hash=token.token_hash,
             created_at=token.created_at,
             user_id=token.user_id,
+            idp_id=token.idp_id,
             expires_at=token.expires_at,
             revoked_at=token.revoked_at,
         )
@@ -25,6 +26,7 @@ class TokenRepository:
     async def create(
         self,
         user_id: UUID,
+        idp_id: UUID,
         token_hash: bytes,
         expires_at: datetime,
     ) -> RefreshTokenDto:
@@ -32,6 +34,7 @@ class TokenRepository:
             insert(RefreshToken)
             .values(
                 user_id=user_id,
+                idp_id=idp_id,
                 token_hash=token_hash,
                 expires_at=expires_at,
             )
