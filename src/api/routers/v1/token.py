@@ -5,11 +5,11 @@ from src.api.schemas.responses import COMMON_RESPONSES, AuthResponse
 from src.domain.use_cases.token_use_case import TokenUseCase
 from starlette import status
 
-router = APIRouter(tags=["Token"], route_class=DishkaRoute)
+router = APIRouter(prefix="/token", tags=["Token"], route_class=DishkaRoute)
 
 
 @router.post(
-    path="/v1/refresh",
+    path="/refresh",
     response_model=AuthResponse,
     status_code=status.HTTP_200_OK,
     summary="Refresh token",
@@ -24,7 +24,7 @@ async def refresh(
 
 
 @router.post(
-    path="/v1/revoke",
+    path="/revoke",
     response_model=None,
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Revoke token",

@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.api.exception_handlers import setup_exception_handlers
+from src.api.exceptions.exception_handlers import setup_exception_handlers
 from src.api.routers import api_router
 from src.ioc import container
 from src.utils.docs_gen import openapi_postprocess
